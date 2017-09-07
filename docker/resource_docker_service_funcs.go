@@ -252,7 +252,7 @@ func createServiceSpec(d *schema.ResourceData) (swarm.ServiceSpec, error) {
 		serviceSpec.Networks = networks
 	}
 
-	serviceSpec.TaskTemplate.ContainerSpec = containerSpec
+	serviceSpec.TaskTemplate.ContainerSpec = &containerSpec
 
 	if v, ok := d.GetOk("secrets"); ok {
 		secrets := []*swarm.SecretReference{}
