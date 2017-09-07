@@ -83,7 +83,7 @@ func resourceDockerServiceCreate(d *schema.ResourceData, meta interface{}) error
 		createOpts.ServiceSpec.Networks = networks
 	}
 
-	createOpts.ServiceSpec.TaskTemplate.ContainerSpec = containerSpec
+	createOpts.ServiceSpec.TaskTemplate.ContainerSpec = &containerSpec
 
 	if v, ok := d.GetOk("secrets"); ok {
 		secrets := []*swarm.SecretReference{}
