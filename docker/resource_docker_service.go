@@ -26,7 +26,6 @@ func resourceDockerService() *schema.Resource {
 			"image": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
-				ForceNew: true,
 			},
 
 			"hostname": &schema.Schema{

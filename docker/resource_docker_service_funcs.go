@@ -65,7 +65,7 @@ func resourceDockerServiceCreate(d *schema.ResourceData, meta interface{}) error
 			if err != nil {
 				return err
 			}
-			if len(tasks) == 1 {
+			if len(tasks) >= 1 {
 				taskID = tasks[0].ID
 			} else {
 				time.Sleep(sleepTime)
@@ -82,7 +82,7 @@ func resourceDockerServiceCreate(d *schema.ResourceData, meta interface{}) error
 			break
 		}
 
-		if task.Status.State == swarm.TaskStateFailed {
+		if task.Status.State == swarm.TaskStateFailed || task.Status.State == swarm.TaskStateRejected || task.Status.State == swarm.TaskStateShutdown {
 			errorCount++
 			taskID = ""
 			if errorCount >= 3 {
