@@ -6,6 +6,7 @@ import (
 
 	"os"
 
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/swarm"
 	dc "github.com/fsouza/go-dockerclient"
 	"github.com/hashicorp/terraform/helper/schema"
@@ -252,7 +253,59 @@ func createServiceSpec(d *schema.ResourceData) (swarm.ServiceSpec, error) {
 		serviceSpec.Networks = networks
 	}
 
-	serviceSpec.TaskTemplate.ContainerSpec = &containerSpec
+	if v, ok := d.GetOk("mounts"); ok {
+		mounts := []mount.Mount{}
+
+		for _, rawMount := range v.(*schema.Set).List() {
+			rawMount := rawMount.(map[string]interface{})
+			mountType := mount.Type(rawMount["type"].(string))
+			mountInstance := mount.Mount{
+				Type:     mountType,
+				Source:   rawMount["source"].(string),
+				Target:   rawMount["target"].(string),
+				ReadOnly: rawMount["read_only"].(bool),
+			}
+
+			if mountType == mount.TypeBind {
+				if w, ok := d.GetOk("bind_propagation"); ok {
+					mountInstance.BindOptions = &mount.BindOptions{
+						Propagation: mount.Propagation(w.(string)),
+					}
+				}
+			} else if mountType == mount.TypeVolume {
+				mountInstance.VolumeOptions = &mount.VolumeOptions{}
+
+				if w, ok := d.GetOk("volume_no_copy"); ok {
+					mountInstance.VolumeOptions.NoCopy = w.(bool)
+				}
+
+				mountInstance.VolumeOptions.DriverConfig = &mount.Driver{}
+				if w, ok := d.GetOk("volume_driver_name"); ok {
+					mountInstance.VolumeOptions.DriverConfig.Name = w.(string)
+				}
+
+				if w, ok := d.GetOk("volume_driver_options"); ok {
+					mountInstance.VolumeOptions.DriverConfig.Options = w.(map[string]string)
+				}
+			} else if mountType == mount.TypeTmpfs {
+				mountInstance.TmpfsOptions = &mount.TmpfsOptions{}
+
+				if w, ok := d.GetOk("tmpfs_size_bytes"); ok {
+					mountInstance.TmpfsOptions.SizeBytes = w.(int64)
+				}
+
+				if w, ok := d.GetOk("tmpfs_mode"); ok {
+					mountInstance.TmpfsOptions.Mode = os.FileMode(w.(int))
+				}
+			}
+
+			mounts = append(mounts, mountInstance)
+		}
+
+		containerSpec.Mounts = mounts
+	}
+
+	serviceSpec.TaskTemplate.ContainerSpec = containerSpec
 
 	if v, ok := d.GetOk("secrets"); ok {
 		secrets := []*swarm.SecretReference{}

@@ -162,6 +162,67 @@ func resourceDockerService() *schema.Resource {
 				},
 				Set: resourceDockerAuthHash,
 			},
+
+			"mounts": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"target": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"source": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"type": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"read_only": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+
+						"bind_propagation": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+
+						"volume_no_copy": &schema.Schema{
+							Type:     schema.TypeBool,
+							Optional: true,
+						},
+
+						"volume_driver_name": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+
+						"volume_driver_options": &schema.Schema{
+							Type:     schema.TypeSet,
+							Optional: true,
+							Elem:     &schema.Schema{Type: schema.TypeString},
+							Set:      schema.HashString,
+						},
+
+						"tmpfs_size_bytes": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+
+						"tmpfs_mode": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+					},
+				},
+				Set: resourceDockerMountsHash,
+			},
 		},
 	}
 }
@@ -177,6 +238,25 @@ func resourceDockerAuthHash(v interface{}) int {
 	}
 
 	if v, ok := m["server_address"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	return hashcode.String(buf.String())
+}
+
+func resourceDockerMountsHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	if v, ok := m["target"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	if v, ok := m["source"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	if v, ok := m["type"]; ok {
 		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
 	}
 
