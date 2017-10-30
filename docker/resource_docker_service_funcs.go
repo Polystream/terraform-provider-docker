@@ -305,7 +305,7 @@ func createServiceSpec(d *schema.ResourceData) (swarm.ServiceSpec, error) {
 		containerSpec.Mounts = mounts
 	}
 
-	serviceSpec.TaskTemplate.ContainerSpec = containerSpec
+	serviceSpec.TaskTemplate.ContainerSpec = &containerSpec
 
 	if v, ok := d.GetOk("secrets"); ok {
 		secrets := []*swarm.SecretReference{}
