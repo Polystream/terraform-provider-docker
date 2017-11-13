@@ -252,6 +252,25 @@ func resourceDockerService() *schema.Resource {
 				},
 				Set: resourceDockerRestartHash,
 			},
+
+			"limits": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"nano_cpus": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+
+						"memory_bytes": &schema.Schema{
+							Type:     schema.TypeInt,
+							Optional: true,
+						},
+					},
+				},
+				Set: resourceDockerLimitsHash,
+			},
 		},
 	}
 }
@@ -310,6 +329,21 @@ func resourceDockerRestartHash(v interface{}) int {
 
 	if v, ok := m["windows"]; ok {
 		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	return hashcode.String(buf.String())
+}
+
+func resourceDockerLimitsHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	if v, ok := m["nano_cpus"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
+	}
+
+	if v, ok := m["memory_bytes"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
 	}
 
 	return hashcode.String(buf.String())
