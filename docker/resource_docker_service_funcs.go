@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"os"
@@ -306,21 +307,24 @@ func createServiceSpec(d *schema.ResourceData) (swarm.ServiceSpec, error) {
 	}
 
 	if v, ok := d.GetOk("restart_policy"); ok {
-		rawPolicy := v.(map[string]interface{})
+		for _, rawPolicy := range v.(*schema.Set).List() {
+			rawPolicy := rawPolicy.(map[string]interface{})
 
-		delay, _ := time.ParseDuration(rawPolicy["delay"].(string))
-		maxAttempts := uint64(rawPolicy["max_attempts"].(int))
-		window, _ := time.ParseDuration(rawPolicy["window"].(string))
+			delay, _ := time.ParseDuration(rawPolicy["delay"].(string))
+			maxAttempts, _ := strconv.Atoi(rawPolicy["max_attempts"].(string))
+			window, _ := time.ParseDuration(rawPolicy["window"].(string))
+			maxAttemptsUint64 := uint64(maxAttempts)
 
-		serviceSpec.TaskTemplate.RestartPolicy = &swarm.RestartPolicy{
-			Condition:   swarm.RestartPolicyCondition(rawPolicy["condition"].(string)),
-			Delay:       &delay,
-			MaxAttempts: &maxAttempts,
-			Window:      &window,
+			serviceSpec.TaskTemplate.RestartPolicy = &swarm.RestartPolicy{
+				Condition:   swarm.RestartPolicyConditionAny,
+				Delay:       &delay,
+				MaxAttempts: &maxAttemptsUint64,
+				Window:      &window,
+			}
 		}
 	}
 
-	serviceSpec.TaskTemplate.ContainerSpec = &containerSpec
+	serviceSpec.TaskTemplate.ContainerSpec = containerSpec
 
 	if v, ok := d.GetOk("secrets"); ok {
 		secrets := []*swarm.SecretReference{}

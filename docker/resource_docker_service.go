@@ -240,7 +240,7 @@ func resourceDockerService() *schema.Resource {
 						},
 
 						"max_attempts": &schema.Schema{
-							Type:     schema.TypeInt,
+							Type:     schema.TypeString,
 							Required: true,
 						},
 
@@ -301,15 +301,15 @@ func resourceDockerRestartHash(v interface{}) int {
 	}
 
 	if v, ok := m["delay"]; ok {
-		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
 	}
 
 	if v, ok := m["max_attempts"]; ok {
-		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
 	}
 
 	if v, ok := m["windows"]; ok {
-		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
 	}
 
 	return hashcode.String(buf.String())
