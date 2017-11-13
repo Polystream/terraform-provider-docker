@@ -327,13 +327,14 @@ func createServiceSpec(d *schema.ResourceData) (swarm.ServiceSpec, error) {
 	serviceSpec.TaskTemplate.Resources = &swarm.ResourceRequirements{}
 
 	if v, ok := d.GetOk("limits"); ok {
-		for _ = range v.(*schema.Set).List() {
+		for _, rawLimit := range v.(*schema.Set).List() {
+			rawLimit := rawLimit.(map[string]interface{})
 			serviceSpec.TaskTemplate.Resources.Limits = &swarm.Resources{}
-			if w, ok := d.GetOk("nano_cpus"); ok {
+			if w, ok := rawLimit["nano_cpus"]; ok {
 				serviceSpec.TaskTemplate.Resources.Limits.NanoCPUs = int64(w.(int))
 			}
 
-			if w, ok := d.GetOk("memory_bytes"); ok {
+			if w, ok := rawLimit["memory_bytes"]; ok {
 				serviceSpec.TaskTemplate.Resources.Limits.MemoryBytes = int64(w.(int))
 			}
 		}
