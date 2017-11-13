@@ -305,6 +305,21 @@ func createServiceSpec(d *schema.ResourceData) (swarm.ServiceSpec, error) {
 		containerSpec.Mounts = mounts
 	}
 
+	if v, ok := d.GetOk("restart_policy"); ok {
+		rawPolicy := v.(map[string]interface{})
+
+		delay, _ := time.ParseDuration(rawPolicy["delay"].(string))
+		maxAttempts := uint64(rawPolicy["max_attempts"].(int))
+		window, _ := time.ParseDuration(rawPolicy["window"].(string))
+
+		serviceSpec.TaskTemplate.RestartPolicy = &swarm.RestartPolicy{
+			Condition:   swarm.RestartPolicyCondition(rawPolicy["condition"].(string)),
+			Delay:       &delay,
+			MaxAttempts: &maxAttempts,
+			Window:      &window,
+		}
+	}
+
 	serviceSpec.TaskTemplate.ContainerSpec = &containerSpec
 
 	if v, ok := d.GetOk("secrets"); ok {

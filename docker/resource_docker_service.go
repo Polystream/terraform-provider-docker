@@ -223,6 +223,35 @@ func resourceDockerService() *schema.Resource {
 				},
 				Set: resourceDockerMountsHash,
 			},
+
+			"restart_policy": &schema.Schema{
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"condition": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"delay": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+
+						"max_attempts": &schema.Schema{
+							Type:     schema.TypeInt,
+							Required: true,
+						},
+
+						"window": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
+				Set: resourceDockerRestartHash,
+			},
 		},
 	}
 }
@@ -258,6 +287,29 @@ func resourceDockerMountsHash(v interface{}) int {
 
 	if v, ok := m["type"]; ok {
 		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	return hashcode.String(buf.String())
+}
+
+func resourceDockerRestartHash(v interface{}) int {
+	var buf bytes.Buffer
+	m := v.(map[string]interface{})
+
+	if v, ok := m["condition"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(string)))
+	}
+
+	if v, ok := m["delay"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
+	}
+
+	if v, ok := m["max_attempts"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
+	}
+
+	if v, ok := m["windows"]; ok {
+		buf.WriteString(fmt.Sprintf("%v-", v.(int)))
 	}
 
 	return hashcode.String(buf.String())
